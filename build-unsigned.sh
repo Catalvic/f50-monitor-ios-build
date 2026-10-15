@@ -35,7 +35,8 @@ command -v xcodegen >/dev/null
 xcodebuild -version | tee "$OUTPUT_ROOT/toolchain.log"
 xcodegen --version | tee -a "$OUTPUT_ROOT/toolchain.log"
 
-swift test --package-path "$SOURCE_ROOT" \
+# Two upstream SMS fixtures construct dates in the process time zone and expect UTC+8.
+TZ=Asia/Shanghai swift test --package-path "$SOURCE_ROOT" \
   --scratch-path "$BUILD_ROOT/core-tests" \
   -Xswiftc -strict-concurrency=minimal \
   2>&1 | tee "$OUTPUT_ROOT/core-tests.log"
@@ -91,6 +92,7 @@ pathlib.Path(sys.argv[1]).write_text(json.dumps({
     "source_status": "last public iOS source before removal from main",
     "upstream_app_version": "2.5",
     "upstream_build_number": "9",
+    "test_timezone": "Asia/Shanghai; required by the upstream SMS date fixtures",
     "built_at_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
     "xcode": subprocess.check_output(["xcodebuild", "-version"], text=True).strip(),
     "workflow_repository": os.getenv("GITHUB_REPOSITORY"),
