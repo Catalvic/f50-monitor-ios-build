@@ -1,0 +1,64 @@
+name: Build F50 Monitor iOS 2.5 unsigned
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - name: Check out build instructions
+        uses: actions/checkout@v4
+        with:
+          path: builder
+          persist-credentials: false
+
+      - name: Check out the last public iOS source
+        uses: actions/checkout@v4
+        with:
+          repository: koldllc/f50-monitor
+          ref: 741984b434f5ee93578bdcc34c32490e975f5595
+          path: source
+          persist-credentials: false
+
+      - name: Prepare XcodeGen
+        shell: bash
+        run: |
+          set -euo pipefail
+          xcodebuild -version
+          if ! command -v xcodegen >/dev/null 2>&1; then
+            brew install xcodegen
+          fi
+          xcodegen --version
+
+      - name: Test, build and verify the unsigned IPA
+        shell: bash
+        run: bash builder/build-unsigned.sh "$GITHUB_WORKSPACE/source" "$GITHUB_WORKSPACE/artifacts"
+
+      - name: Save IPA and build evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: F50-Monitor-iOS-2.5-unsigned
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            artifacts/f50-monitor-ios-2.5-unsigned.ipa
+            artifacts/SHA256SUMS.txt
+            artifacts/ipa-verification.json
+            artifacts/provenance.json
+            artifacts/UPSTREAM-LICENSE
+
+      - name: Save build and test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: F50-Monitor-iOS-2.5-build-logs
+          if-no-files-found: warn
+          retention-days: 14
+          path: |
+            artifacts/*.log
+
