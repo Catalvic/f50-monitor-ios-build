@@ -17,7 +17,7 @@ write_build_summary() {
         [[ -f "$log" ]] || continue
         echo "### $(basename "$log")"
         echo '```text'
-        tail -n 120 "$log"
+        tail -n 400 "$log"
         echo '```'
       done
     } >> "$GITHUB_STEP_SUMMARY"
