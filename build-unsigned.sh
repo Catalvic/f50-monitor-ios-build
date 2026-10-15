@@ -7,6 +7,24 @@ OUTPUT_ROOT="$(cd "$2" && pwd)"
 BUILDER_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BUILD_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/f50-ios.XXXXXX")"
 
+write_build_summary() {
+  build_exit=$?
+  if [[ -n "${GITHUB_STEP_SUMMARY:-}" ]]; then
+    {
+      echo '## Build diagnostics'
+      echo "Exit code: $build_exit"
+      for log in "$OUTPUT_ROOT/toolchain.log" "$OUTPUT_ROOT/core-tests.log" "$OUTPUT_ROOT/xcodebuild.log"; do
+        [[ -f "$log" ]] || continue
+        echo "### $(basename "$log")"
+        echo '```text'
+        tail -n 120 "$log"
+        echo '```'
+      done
+    } >> "$GITHUB_STEP_SUMMARY"
+  fi
+}
+trap write_build_summary EXIT
+
 if [[ "$(uname -s)" != Darwin ]]; then
   echo 'This build requires macOS with Xcode and the iPhoneOS SDK.' >&2
   exit 1
