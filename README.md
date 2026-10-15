@@ -1,6 +1,9 @@
 # F50 Monitor iOS 2.5 自签名构建
 
-本目录是构建材料，尚不是 IPA。只有 macOS 编译成功并通过校验后才会生成 IPA。
+本目录保存可复现的构建脚本。iOS 2.5（构建号 9）未签名 IPA 已于 2026-10-15 成功生成：99 项测试全部通过，Xcode 16.4 的 iPhoneOS Release 编译及 IPA 包校验通过。
+
+成功构建记录：<https://github.com/Catalvic/f50-monitor-ios-build/actions/runs/38697047308>。
+在该页面下载 `F50-Monitor-iOS-2.5-unsigned` 产物并解压。成品需要用你自己的 Apple 签名身份重签后安装；未进行真机安装验证。
 
 ## 源码依据
 
@@ -13,9 +16,10 @@
 
 ## GitHub Actions 构建
 
-将本目录内的 README、UPSTREAM-LICENSE、两个脚本和 `.github/workflows/build-ios-unsigned.yml` 放入你控制的构建仓库。
+构建仓库：<https://github.com/Catalvic/f50-monitor-ios-build>。如需在其他仓库复现，将本目录内的 README、UPSTREAM-LICENSE、两个脚本和 `.github/workflows/build-ios-unsigned.yml` 放入你控制的构建仓库。
 在 Actions 中手动运行 **Build F50 Monitor iOS 2.5 unsigned**。
 流程从公开上游固定提交获取源码，运行已有 Swift 单元测试，生成 Xcode 工程，执行 iPhoneOS Release 编译，再验证 IPA。
+测试进程使用 `TZ=Asia/Shanghai`：上游两条短信日期测试用进程默认时区构造日期，但预期固定为 UTC+8。本构建仅明确测试时区，保留全部 99 项测试及原有断言，不修改应用源码。
 流程仅有 `contents: read` 权限；产物保存为 Actions artifact，保留 30 天；没有 Release 发布步骤。
 构建无需 Apple ID、证书、描述文件或设备密码。
 
